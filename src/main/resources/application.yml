@@ -1,0 +1,13 @@
+app:
+  jwt-secret: ${JWT_SECRET}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/efd-client
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: true
+  flyway:
+    enabled: true
+    out-of-order: true
