@@ -3,9 +3,9 @@ app:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/efd-client
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://${POSTGRES_URL}:5432/efdapi
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
   jpa:
     show-sql: true
   flyway:

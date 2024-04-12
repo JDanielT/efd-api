@@ -1,30 +1,38 @@
 package br.com.jbssistemas.efdclient.service;
 
+import br.com.jbssistemas.efdclient.model.Declarante;
+import br.gov.esocial.reinf.schemas.envioloteeventosassincrono.v1_00_00.Reinf;
+import br.gov.esocial.reinf.schemas.envioloteeventosassincrono.v1_00_00.TArquivoReinf;
+import br.gov.esocial.reinf.schemas.envioloteeventosassincrono.v1_00_00.TIdeContribuinte;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
 
 @Service
+@RequiredArgsConstructor
 public class WrapperReinfEventService {
 
-    private static final String ROOT_XMLNS = "http://sped.fazenda.gov.br/";
-    private static final String REINF_XMLNS = "http://www.reinf.esocial.gov.br/schemas/envioLoteEventosAssincrono/v1_00_00";
+    public Reinf wrapper(String idEvento, Document evento, Declarante declarante) {
+        var tArquivoReinf = new TArquivoReinf();
+        tArquivoReinf.setId(idEvento);
+        tArquivoReinf.setAny(evento.getDocumentElement());
 
-    public String wrapper(String eventId, String eventContent) {
-        var sb = new StringBuilder();
-        sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-        sb.append("<Reinf xmlns=\"" + REINF_XMLNS + "\">");
-        sb.append("<envioLoteEventos>");
-        sb.append("<ideContribuinte>");
-        sb.append("<tpInsc>1</tpInsc>");
-        sb.append("<nrInsc>07811946000187</nrInsc>");
-        sb.append("</ideContribuinte>");
-        sb.append("<eventos>");
-        sb.append("<evento Id=\"" + eventId + "\">");
-        sb.append(eventContent.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", ""));
-        sb.append("</evento>");
-        sb.append("</eventos>");
-        sb.append("</envioLoteEventos>");
-        sb.append("</Reinf>");
-        return sb.toString();
+        var tIdeContribuinte = new TIdeContribuinte();
+        tIdeContribuinte.setTpInsc((short) declarante.getTipoInscricao());
+        tIdeContribuinte.setNrInsc(declarante.getNumeroInscricao());
+
+        var envioLoteEventos = new Reinf.EnvioLoteEventos();
+
+        envioLoteEventos.setIdeContribuinte(tIdeContribuinte);
+
+        envioLoteEventos.setEventos(new Reinf.EnvioLoteEventos.Eventos());
+        envioLoteEventos.getEventos().getEvento().add(tArquivoReinf);
+
+        var reinfEnvioLote = new Reinf();
+        reinfEnvioLote.setEnvioLoteEventos(envioLoteEventos);
+
+        return reinfEnvioLote;
+
     }
 
 }

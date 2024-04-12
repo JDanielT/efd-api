@@ -1,0 +1,2 @@
+ALTER TABLE evento ADD COLUMN protocolo_envio VARCHAR(255);
+ALTER TABLE evento ALTER COLUMN observacao TYPE TEXT;

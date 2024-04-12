@@ -2,9 +2,9 @@ package br.com.jbssistemas.efdclient.service;
 
 import br.com.jbssistemas.efdclient.model.CertData;
 import br.com.jbssistemas.efdclient.response.ReinfResponseParser;
-import br.com.jbssistemas.efdclient.util.XmlUtils;
 import br.gov.esocial.reinf.schemas.retornoloteeventosassincrono.v1_00_00.Reinf;
 import lombok.RequiredArgsConstructor;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -14,28 +14,25 @@ import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.TrustStrategy;
 import org.springframework.stereotype.Service;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.stream.Collectors;
+
+import static br.com.jbssistemas.efdclient.util.XmlUtils.convertObjectToXmlString;
 
 @Service
 @RequiredArgsConstructor
-public class XmlApiService {
+public class ReinfApiService {
 
     private final KeyStoreService keyStoreService;
-    private final SignerReinfDocumentService signerReinfDocumentService;
-    private final WrapperReinfEventService wrapperReinfEventService;
     private final ReinfResponseParser reinfResponseParser;
 
-    public Reinf sendSignedXmlData(String eventId, Object xmlObject, String apiUrl, CertData certData) {
+    public Reinf postEvent(Object xmlObject, CertData certData) {
         try {
-            var xmlString = convertObjectToXml(xmlObject);
-            var document = XmlUtils.parseXmlString(xmlString);
-            var signedXml = signerReinfDocumentService.sign(document, certData);
+
+            var apiUrl = "https://reinf.receita.economia.gov.br/recepcao/lotes";
+
+            var xmlString = convertObjectToXmlString(xmlObject);
             var keyStore = keyStoreService.getKeyStore(certData);
 
             TrustStrategy trustStrategy = (chain, authType) -> true;
@@ -50,10 +47,8 @@ public class XmlApiService {
             try (var connectionManager = PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(socketFactory).build();
                  var httpClient = HttpClients.custom().setConnectionManager(connectionManager).build()) {
 
-                var wrapped = wrapperReinfEventService.wrapper(eventId, signedXml);
-
                 var post = new HttpPost(apiUrl);
-                post.setEntity(EntityBuilder.create().setText(wrapped).build());
+                post.setEntity(EntityBuilder.create().setText(xmlString).build());
                 post.addHeader("Content-Type", "application/xml");
 
                 try (var response = httpClient.execute(post)) {
@@ -73,18 +68,39 @@ public class XmlApiService {
         }
     }
 
-    private String convertObjectToXml(Object obj) {
+    public Reinf queryEvent(String protocol, CertData certData) {
         try {
-            var jaxbContext = JAXBContext.newInstance(obj.getClass());
-            var marshaller = jaxbContext.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            var apiUrl = "https://reinf.receita.economia.gov.br/consulta/lotes/" + protocol;
+            var keyStore = keyStoreService.getKeyStore(certData);
 
-            var sw = new StringWriter();
-            marshaller.marshal(obj, sw);
-            return sw.toString();
+            TrustStrategy trustStrategy = (chain, authType) -> true;
+
+            var sslContext = SSLContextBuilder.create()
+                    .loadKeyMaterial(keyStore, certData.getKeystorePassword().toCharArray())
+                    .loadTrustMaterial(trustStrategy)
+                    .build();
+
+            var socketFactory = new SSLConnectionSocketFactory(sslContext);
+
+            try (var connectionManager = PoolingHttpClientConnectionManagerBuilder.create().setSSLSocketFactory(socketFactory).build();
+                 var httpClient = HttpClients.custom().setConnectionManager(connectionManager).build()) {
+
+                var get = new HttpGet(apiUrl);
+                get.addHeader("Content-Type", "application/xml");
+
+                try (var response = httpClient.execute(get)) {
+
+                    var responseStream = response.getEntity().getContent();
+                    var responseBody = new BufferedReader(new InputStreamReader(responseStream))
+                            .lines().collect(Collectors.joining("\n"));
+
+                    return reinfResponseParser.parseXML(responseBody);
+
+                }
+
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

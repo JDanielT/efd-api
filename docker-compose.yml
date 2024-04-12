@@ -4,13 +4,13 @@ services:
     image: postgres:12
     container_name: efd-postgres
     environment:
-      POSTGRES_DB: efd-client
+      POSTGRES_DB: efdapi
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
-      - postgres-efd-client-data:/var/lib/postgresql/data
+      - postgres-efd-api-data:/var/lib/postgresql/data
 
 volumes:
-  postgres-efd-client-data:
+  postgres-efd-api-data:
