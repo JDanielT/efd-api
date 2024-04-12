@@ -32,71 +32,75 @@ public class SignerReinfDocumentService {
 
     private final KeyStoreService keyStoreService;
 
-    public Document sign(Document doc, CertData cert) throws Exception {
+    public Document sign(Document doc, CertData cert) {
 
-        var keyEntry = keyStoreService.getKeyEntry(cert);
-        var rootItem = doc.getDocumentElement();
+        try {
+            var keyEntry = keyStoreService.getKeyEntry(cert);
+            var rootItem = doc.getDocumentElement();
 
-        String elementoID = null;
-        Element childNode = null;
+            String elementoID = null;
+            Element childNode = null;
 
-        var childNodes = rootItem.getChildNodes();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            if (Element.class.isInstance(childNodes.item(i))) {
-                childNode = Element.class.cast(childNodes.item(i));
-                elementoID = childNode.getAttribute("id");
-                if (elementoID != null) {
-                    break;
+            var childNodes = rootItem.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                if (Element.class.isInstance(childNodes.item(i))) {
+                    childNode = Element.class.cast(childNodes.item(i));
+                    elementoID = childNode.getAttribute("id");
+                    if (elementoID != null) {
+                        break;
+                    }
                 }
             }
+
+            if (elementoID == null || elementoID.isEmpty()) {
+                throw new NoSuchFieldException("Campo ID não encontrado na tag do Evento!");
+            }
+
+            childNode.setIdAttribute("id", true);
+
+            if (keyEntry == null) {
+                throw new InvalidKeyException("ID incorreto do certificado digital!");
+            }
+
+            var dsc = new DOMSignContext(keyEntry.getPrivateKey(), rootItem);
+
+            var fac = XMLSignatureFactory.getInstance("DOM");
+
+            var transforms = new ArrayList<Transform>();
+            transforms.add(fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));
+            transforms.add(fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null));
+
+            var ref = fac.newReference("#" + elementoID,
+                    fac.newDigestMethod(DigestMethod.SHA256, null),
+                    transforms, null, null);
+
+            var si = fac.newSignedInfo(
+                    fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                            (C14NMethodParameterSpec) null),
+                    fac.newSignatureMethod(SIGNATURE_METHOD, null),
+                    Collections.singletonList(ref));
+
+            var kif = fac.getKeyInfoFactory();
+
+            var x509Content = new ArrayList<Certificate>();
+            x509Content.add(keyEntry.getCertificate());
+
+            var kv = kif.newX509Data(x509Content);
+            var ki = kif.newKeyInfo(Collections.singletonList(kv));
+            var signature = fac.newXMLSignature(si, ki);
+
+            signature.sign(dsc);
+
+            var tf = TransformerFactory.newInstance();
+            var trans = tf.newTransformer();
+
+            var output = new ByteArrayOutputStream();
+            trans.transform(new DOMSource(doc), new StreamResult(output));
+
+            return parseXmlStringToDocument(output.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        if (elementoID == null || elementoID.isEmpty()) {
-            throw new NoSuchFieldException("Campo ID não encontrado na tag do Evento!");
-        }
-
-        childNode.setIdAttribute("id", true);
-
-        if (keyEntry == null) {
-            throw new InvalidKeyException("ID incorreto do certificado digital!");
-        }
-
-        var dsc = new DOMSignContext(keyEntry.getPrivateKey(), rootItem);
-
-        var fac = XMLSignatureFactory.getInstance("DOM");
-
-        var transforms = new ArrayList<Transform>();
-        transforms.add(fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));
-        transforms.add(fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null));
-
-        var ref = fac.newReference("#" + elementoID,
-                fac.newDigestMethod(DigestMethod.SHA256, null),
-                transforms, null, null);
-
-        var si = fac.newSignedInfo(
-                fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
-                        (C14NMethodParameterSpec) null),
-                fac.newSignatureMethod(SIGNATURE_METHOD, null),
-                Collections.singletonList(ref));
-
-        var kif = fac.getKeyInfoFactory();
-
-        var x509Content = new ArrayList<Certificate>();
-        x509Content.add(keyEntry.getCertificate());
-
-        var kv = kif.newX509Data(x509Content);
-        var ki = kif.newKeyInfo(Collections.singletonList(kv));
-        var signature = fac.newXMLSignature(si, ki);
-
-        signature.sign(dsc);
-
-        var tf = TransformerFactory.newInstance();
-        var trans = tf.newTransformer();
-
-        var output = new ByteArrayOutputStream();
-        trans.transform(new DOMSource(doc), new StreamResult(output));
-
-        return parseXmlStringToDocument(output.toString());
 
     }
 

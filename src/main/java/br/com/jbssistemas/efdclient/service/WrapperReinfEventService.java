@@ -34,5 +34,5 @@ public class WrapperReinfEventService {
         return reinfEnvioLote;
 
     }
-
+    
 }

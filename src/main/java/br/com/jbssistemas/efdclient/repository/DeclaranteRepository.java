@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DeclaranteRepository extends JpaRepository<Declarante, Long> {
+
+    Declarante findByNumeroInscricao(String numeroInscricao);
+
 }
