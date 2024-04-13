@@ -2,6 +2,7 @@ package br.com.jbssistemas.efdclient.service.csv;
 
 import br.com.jbssistemas.efdclient.repository.DeclaranteRepository;
 import br.com.jbssistemas.efdclient.service.eventos.Evento4010PagamentoBeneficiarioPFDto;
+import br.com.jbssistemas.efdclient.service.eventos.Evento4020PagamentoBeneficiarioPJDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,14 +17,14 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class Evento4010PagamentoBeneficiarioPFCsvReader {
+public class Evento4020PagamentoBeneficiarioPJCsvReader {
 
     private final DeclaranteRepository declaranteRepository;
 
-    public List<Evento4010PagamentoBeneficiarioPFDto> read(String csvFilePath) {
+    public List<Evento4020PagamentoBeneficiarioPJDto> read(String csvFilePath) {
 
         final var SEPARATOR = ";";
-        final var list = new ArrayList<Evento4010PagamentoBeneficiarioPFDto>();
+        final var list = new ArrayList<Evento4020PagamentoBeneficiarioPJDto>();
         final var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         try (var br = new BufferedReader(new FileReader(csvFilePath))) {
@@ -35,7 +36,7 @@ public class Evento4010PagamentoBeneficiarioPFCsvReader {
 
                 var declarante = declaranteRepository.findByNumeroInscricao(data[0]);
 
-                list.add(Evento4010PagamentoBeneficiarioPFDto.builder()
+                list.add(Evento4020PagamentoBeneficiarioPJDto.builder()
                         .data(LocalDate.parse(data[1], formatter))
                         .numeroPagamento(data[2])
                         .declarante(declarante)
