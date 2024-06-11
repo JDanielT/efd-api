@@ -1,0 +1,1 @@
+ALTER TABLE evento ADD COLUMN identificador_adicional VARCHAR(255);
