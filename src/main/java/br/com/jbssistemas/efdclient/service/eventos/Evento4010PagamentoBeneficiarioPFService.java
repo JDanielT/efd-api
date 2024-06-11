@@ -10,6 +10,7 @@ import br.com.jbssistemas.efdclient.service.WrapperReinfEventService;
 import br.com.jbssistemas.efdclient.util.EventoUtil;
 import br.gov.esocial.reinf.schemas.evt4010pagtobeneficiariopf.v2_01_02.Reinf;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -25,6 +26,7 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
+@Log4j2
 @RequiredArgsConstructor
 public class Evento4010PagamentoBeneficiarioPFService {
 
@@ -70,7 +72,16 @@ public class Evento4010PagamentoBeneficiarioPFService {
                 .protocoloEnvio(dadosRecepcao == null ? "N/A" : dadosRecepcao.getProtocoloEnvio())
                 .observacao(getObservacoes(response))
                 .declarante(declarante)
+                .identificadorAdicional(dto.getNumeroPagamento())
                 .build();
+
+        log.info("enviado {}", dto.getNumeroPagamento());
+
+        try {
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         return eventoRepository.save(evento);
 

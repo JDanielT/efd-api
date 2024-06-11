@@ -23,6 +23,7 @@ public class Evento {
     private String referencia;
     private String protocoloEnvio;
     private String observacao;
+    private String identificadorAdicional;
 
     @ManyToOne
     @JoinColumn(name = "declarante_id")

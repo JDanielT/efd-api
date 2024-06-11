@@ -2,9 +2,11 @@ package br.com.jbssistemas.efdclient.util;
 
 import lombok.extern.log4j.Log4j2;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMResult;
@@ -47,6 +49,19 @@ public class XmlUtils {
             var sw = new StringWriter();
             marshaller.marshal(obj, sw);
             return sw.toString();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String elementToString(Element element) {
+        try {
+            javax.xml.transform.TransformerFactory tf = javax.xml.transform.TransformerFactory.newInstance();
+            javax.xml.transform.Transformer transformer = tf.newTransformer();
+            java.io.StringWriter writer = new java.io.StringWriter();
+            transformer.transform(new javax.xml.transform.dom.DOMSource(element), new javax.xml.transform.stream.StreamResult(writer));
+            return writer.toString();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException(e);

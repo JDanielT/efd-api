@@ -55,7 +55,6 @@ public class Evento1000InfoContribuinteService {
         infoCadastro.setClassTrib(declarante.getClassificacaoTributaria());
 
         // VALORES DEFAULT PARA MUNICIPIOS - TODO ADICIONAR CONFIG
-        infoCadastro.setIndUniao((short) 0);
         infoCadastro.setIndEscrituracao((short) 0);
         infoCadastro.setIndDesoneracao((short) 0);
         infoCadastro.setIndAcordoIsenMulta((short) 0);
