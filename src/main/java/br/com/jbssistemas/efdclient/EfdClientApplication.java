@@ -63,7 +63,7 @@ public class EfdClientApplication {
 //    ) {
 //        return (args) -> {
 //
-//            var csvPath = "/home/daniel/Desktop/reinf/p106/e-4010-abr-2024.csv";
+//            var csvPath = "/home/daniel/Desktop/reinf/p031/e-4010-08-2024.csv";
 //            var dtos = evento4010CsvReader.read(csvPath);
 //
 //            dtos.forEach(evento4010PagamentoBeneficiarioPFService::enviar);
@@ -73,24 +73,24 @@ public class EfdClientApplication {
 //        };
 //    }
 
-//    @Bean
-//    CommandLineRunner runner(
-//            Evento4020PagamentoBeneficiarioPJCsvReader evento4020CsvReader,
-//            Evento4020PagamentoBeneficiarioPJService evento4020PagamentoBeneficiarioPJService
-//    ) {
-//        return (args) -> {
-//
-//            var csvPath = "/home/daniel/Desktop/reinf/p031/e-4020-abr-2024.csv";
-//            var dtos = evento4020CsvReader.read(csvPath)
-//                    .stream()
-//                    .toList();
-//
-//            dtos.forEach(evento4020PagamentoBeneficiarioPJService::enviar);
-//
-//            log.info("finalizado");
-//
-//        };
-//    }
+    @Bean
+    CommandLineRunner runner(
+            Evento4020PagamentoBeneficiarioPJCsvReader evento4020CsvReader,
+            Evento4020PagamentoBeneficiarioPJService evento4020PagamentoBeneficiarioPJService
+    ) {
+        return (args) -> {
+
+            var csvPath = "/home/daniel/Desktop/reinf/p031/e-4020-08-2024.csv";
+            var dtos = evento4020CsvReader.read(csvPath)
+                    .stream()
+                    .toList();
+
+            dtos.forEach(evento4020PagamentoBeneficiarioPJService::enviar);
+
+            log.info("finalizado");
+
+        };
+    }
 
 //    @Bean
 //    CommandLineRunner runner(EventoUpdateJob eventoUpdateJob, DeclaranteRepository declaranteRepository) {

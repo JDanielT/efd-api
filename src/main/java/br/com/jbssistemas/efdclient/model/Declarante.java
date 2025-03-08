@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Declarante {
+public class Declarante extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,7 +1,7 @@
 package br.com.jbssistemas.efdclient.service;
 
 import br.com.jbssistemas.efdclient.model.CertData;
-import br.com.jbssistemas.efdclient.response.ReinfResponseParser;
+import br.com.jbssistemas.efdclient.response.parser.ReinfResponseParser;
 import br.gov.esocial.reinf.schemas.retornoloteeventosassincrono.v1_00_00.Reinf;
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.classic.methods.HttpGet;

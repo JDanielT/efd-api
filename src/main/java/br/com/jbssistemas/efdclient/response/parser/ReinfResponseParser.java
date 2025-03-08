@@ -1,4 +1,4 @@
-package br.com.jbssistemas.efdclient.response;
+package br.com.jbssistemas.efdclient.response.parser;
 
 import br.gov.esocial.reinf.schemas.retornoloteeventosassincrono.v1_00_00.Reinf;
 import org.springframework.stereotype.Component;
